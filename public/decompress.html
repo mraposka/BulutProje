@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dosya Açma</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Dosya Açma</h1>
+        <form id="decompressForm" action="/decompress" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" required>
+            <button type="submit">Aç</button>
+        </form>
+        <div id="progressContainer" style="display: none;">
+            <progress id="progressBar" value="0" max="100"></progress>
+            <span id="progressText"></span>
+        </div>
+    </div>
+    <script>
+        const decompressForm = document.getElementById('decompressForm');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const progressContainer = document.getElementById('progressContainer');
+
+        decompressForm.onsubmit = function (event) {
+            event.preventDefault();
+            const formData = new FormData(decompressForm);
+            progressContainer.style.display = 'block';
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', decompressForm.action, true);
+
+            // Yükleme ilerlemesini izleme
+            xhr.upload.onprogress = function (event) {
+                if (event.lengthComputable) {
+                    const percentComplete = (event.loaded / event.total) * 100;
+                    progressBar.value = percentComplete;
+                    progressText.innerText = Math.round(percentComplete) + '%';
+                }
+            };
+
+            // Yükleme tamamlandıktan sonra yanıtı göster
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    document.body.innerHTML = xhr.response; // Yanıtı göster
+                } else {
+                    progressText.innerText = 'Yükleme sırasında bir hata oluştu.';
+                }
+            };
+
+            xhr.send(formData);
+        };
+    </script>
+</body>
+</html>
